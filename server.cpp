@@ -10,7 +10,13 @@
 //    struct in_addr sin_addr;   /* internet address */
 // };
 
-int main() {
+int main(int argc, char **argv) {
+
+	if (argc != 2) {
+		std::cout << "Error\nExecutable run as follows:\n\"./webserv [configuration file]\"" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	(void)argv;
 	// Create a socket (IPv4, TCP)
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd == -1) {
@@ -19,12 +25,13 @@ int main() {
 	}
 
 	// Listen to port 9999 on any address
+	int port = 9999;
 	sockaddr_in sockaddr;
 	sockaddr.sin_family = AF_INET;
 	sockaddr.sin_addr.s_addr = INADDR_ANY;
-	sockaddr.sin_port = htons(9999); // convert a number to network byte order
+	sockaddr.sin_port = htons(port); // convert a number to network byte order
 	if (bind(sockfd, (struct sockaddr*)&sockaddr, sizeof(sockaddr)) < 0) {
-		std::cout << "Failed to bind to port 9999. errno: " << errno << std::endl;
+		std::cout << "Failed to bind to port " << port << ". errno: " << errno << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
@@ -38,17 +45,17 @@ int main() {
 	socklen_t addrlen = sizeof(sockaddr); // not sure if int or socklen_t
 	int connection = accept(sockfd, (struct sockaddr*)&sockaddr, (socklen_t*)&addrlen);
 	if (connection < 0) {
-		std::cout << "Failed to grab connection. errno: " << errno << std::endl;
+		std::cout << "Failed to connect. errno: " << errno << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
 	// Read from the connection
 	char buffer[100] = {0};
 	read(connection, buffer, 100);
-	std::cout << "The message was: " << buffer;
+	std::cout << "Request: " << buffer;
 
 	// Send a message to the connection
-	std::string response = "server response: fuck off\n";
+	std::string response = "Server response: fuck off\n";
 	send(connection, response.c_str(), response.size(), 0);
 
 	// Close the connections
